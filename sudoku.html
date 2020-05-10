@@ -1,0 +1,797 @@
+<!doctype html>
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.dropdown {
+  float: left;
+  overflow: hidden;
+}
+
+.dropdown .dropbtn {
+  font-size: 16px;  
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+
+.navbar a:hover, .dropdown:hover .dropbtn {
+  background-color: red;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+</style>
+<script type="text/javascript">
+var redArray=[]
+var sudokuArray=[]
+var checkArray=[]
+var difficulty='E'
+var span
+
+function checkColumn(column,j,num)
+{
+var z=0;
+for(var i=0;i<9;++i)
+{
+if(sudokuArray[i][column]==num&&i!=j)
+{
+z=1
+break
+}
+}
+return z;
+}
+
+function checkRow(row,j,num)
+{
+var z=0;
+for(var i=0;i<9;++i)
+{
+if(sudokuArray[row][i]==num&&i!=j)
+{
+z=1
+break
+}
+}
+return z;
+}
+
+function checkBox(row,column,num)
+{
+var ii=parseInt(row/3)
+var jj=parseInt(column/3)
+var z=0;
+for(var i=0;i<3;++i)
+{
+for(var j=0;j<3;++j)
+{
+if(sudokuArray[i+ii*3][j+jj*3]==num&&((ii*3+i)!=row||(jj*3+j)!=column))
+{
+z=1
+break
+}
+}
+}
+return z;
+}
+function fillDiagonal()
+{
+for(var i=0;i<9;i=i+3)
+{
+for(var j=0;j<3;++j)
+{
+for(var k=0;k<3;++k)
+{
+var rnd;
+while(1)
+{
+rnd=Math.floor(Math.random()*9)+1
+if(checkBox(j+i,k+i,rnd)==0)break
+
+}
+
+checkArray[j+i][k+i]=rnd;
+sudokuArray[j+i][k+i]=rnd;
+
+}
+}
+}
+}
+
+
+
+function fillRemainingBoxes(i,j)
+{
+if(j>=9&&i<8)
+{
+i=i+1
+j=0
+}
+if(i>=9&&j>=9)return true
+
+if(i<3)
+{
+if(j<3)
+{
+j=3
+}
+}
+else if(i<6)
+{
+if(j==parseInt(i/3)*3)j=j+3
+}
+else
+{
+if(j==6)
+{
+i=i+1
+j=0
+if(i>=9)return true
+}
+}
+for(var num=1;num<=9;++num)
+{
+if(checkBox(i,j,num)==0&&checkRow(i,j,num)==0&&checkColumn(j,i,num)==0)
+{
+sudokuArray[i][j]=num
+checkArray[i][j]=num
+if(fillRemainingBoxes(i,j+1))return true
+sudokuArray[i][j]=0
+checkArray[i][j]=0
+}
+}
+return false
+}
+function removeBlocks(randomNumber)
+{
+
+for(var i=1;i<=randomNumber;++i)
+{
+j=Math.floor(Math.random() *9)+1
+k=Math.floor(Math.random() *9)+1
+if(sudokuArray[j-1][k-1]!=0)
+{
+sudokuArray[j-1][k-1]=0;
+checkArray[j-1][k-1]=0;
+}
+}
+
+
+
+}
+
+function checkSudokuData(i1,j1,rnd)
+{
+var z=1
+if(checkBox(i1,j1,rnd)==0&&checkRow(i1,j1,rnd)==0&&checkColumn(j1,i1,rnd)==0)z=0
+return z;
+}
+
+
+function generateSudokuDataset()
+{
+var randomNumber;
+
+if(difficulty==='E')
+{
+
+randomNumber=Math.floor(Math.random() * 15)+10
+}
+if(difficulty==='M')
+{
+
+randomNumber=Math.floor(Math.random() * 15)+30
+
+}
+if(difficulty==='H')
+{
+
+randomNumber=Math.floor(Math.random() * 15)+45
+
+}
+
+
+sudokuArray=[]
+
+var sud1=[0,0,0,0,0,0,0,0,0]
+var sud2=[0,0,0,0,0,0,0,0,0]
+var sud3=[0,0,0,0,0,0,0,0,0]
+var sud4=[0,0,0,0,0,0,0,0,0]
+var sud5=[0,0,0,0,0,0,0,0,0]
+var sud6=[0,0,0,0,0,0,0,0,0]
+var sud7=[0,0,0,0,0,0,0,0,0]
+var sud8=[0,0,0,0,0,0,0,0,0]
+var sud9=[0,0,0,0,0,0,0,0,0]
+
+sudokuArray.push(sud1)
+sudokuArray.push(sud2)
+sudokuArray.push(sud3)
+sudokuArray.push(sud4)
+sudokuArray.push(sud5)
+sudokuArray.push(sud6)
+sudokuArray.push(sud7)
+sudokuArray.push(sud8)
+sudokuArray.push(sud9)
+var sud11=[0,0,0,0,0,0,0,0,0]
+var sud12=[0,0,0,0,0,0,0,0,0]
+var sud13=[0,0,0,0,0,0,0,0,0]
+var sud14=[0,0,0,0,0,0,0,0,0]
+var sud15=[0,0,0,0,0,0,0,0,0]
+var sud16=[0,0,0,0,0,0,0,0,0]
+var sud17=[0,0,0,0,0,0,0,0,0]
+var sud18=[0,0,0,0,0,0,0,0,0]
+var sud19=[0,0,0,0,0,0,0,0,0]
+ checkArray=[]
+checkArray.push(sud11)
+checkArray.push(sud12)
+checkArray.push(sud13)
+checkArray.push(sud14)
+checkArray.push(sud15)
+checkArray.push(sud16)
+checkArray.push(sud17)
+checkArray.push(sud18)
+checkArray.push(sud19)
+
+
+fillDiagonal()
+fillRemainingBoxes(0,0)
+removeBlocks(randomNumber)
+
+}
+
+
+var can;
+
+var context;
+var canvasWidth;
+
+var canvasHeight;
+var sudokuBorderWidth;
+var sudokuBorderHeight;
+var avg;
+
+var initialX;
+var initialY;
+var widthC;
+var heightC;
+var heightR;
+var widthR;
+var init;
+function drawSudoku()
+{
+for(var i=1;i<9;++i)
+{
+if(i%3==0)context.lineWidth=3
+else context.lineWidth=1
+context.beginPath();
+context.moveTo(initialX+i*widthC, initialY);
+context.lineTo(initialX+i*widthC, heightC);
+
+context.stroke();
+context.beginPath();
+context.moveTo(initialX, initialY+i*heightR);
+context.lineTo(widthR,initialY+i*heightR);
+context.stroke();
+
+
+}
+
+editImage=document.getElementById('editImage')
+context.lineWidth="2"
+context.font="20px Georgia";
+context.textAlign="center";
+context.textBaseline = "middle";
+
+for(var i=0;i<10;++i)
+{
+if(i==9)
+{
+context.strokeRect(init+i*(heightR+5),initialY+avg,heightR,heightR);
+context.drawImage(editImage,init+i*(heightR+5),initialY+avg,heightR,heightR)
+}
+else
+{
+context.strokeRect(init+i*(heightR+5),initialY+avg,heightR,heightR);
+context.strokeText(i+1,init+i*(heightR+5)+(heightR/2),initialY+avg+(heightR/2))
+}
+}
+context.lineWidth="5"
+context.strokeRect(sudokuBorderWidth-300,sudokuBorderHeight-300,avg-50,avg-50)
+
+}
+var modal;
+
+function checkSolution()
+{
+var z=0
+for(var i=0;i<9;++i)
+{
+for(var j=0;j<9;++j)
+{
+
+var check=checkSudokuData(i,j,sudokuArray[i][j]);
+if(check==1)
+{
+z=1
+break
+}
+}
+}
+
+
+text=document.getElementById('text')
+
+if(z==0)
+{
+text.innerHTML="Yippy!! Correct Solution"
+}
+else
+{
+text.innerHTML="Wrong Solution"
+}
+modal.style.display="block"
+}
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+function getMousePos(canvas,event)
+{
+var rect=canvas.getBoundingClientRect();
+return {
+x:event.clientX-rect.left,
+y:event.clientY-rect.top
+};
+}
+
+
+
+
+
+
+
+function isInside(pos, x,y,width,height){
+    return pos.x>x && pos.x < x+width && pos.y < y+height && pos.y > y
+}
+
+
+
+
+
+
+function renderDataset()
+{
+var count=0
+for(var i=0;i<9;++i)
+{
+for(var j=0;j<9;++j)
+{
+
+if(sudokuArray[i][j]!=0&&sudokuArray[i][j]==checkArray[i][j])
+{
+
+context.strokeStyle = "blue";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(sudokuArray[i][j],initialX+i*widthC+(widthC/2),initialY+j*widthC+(widthC/2))
+
+}
+if(sudokuArray[i][j]!=0&&sudokuArray[i][j]!=checkArray[i][j])
+{
+context.strokeStyle = "black";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(sudokuArray[i][j],initialX+i*widthC+(widthC/2),initialY+j*widthC+(widthC/2))
+
+}
+
+if(redArray.includes(i*9+j+1)==true&&sudokuArray[i][j]!=0)
+{
+
+context.strokeStyle = "red";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(sudokuArray[i][j],initialX+i*widthC+(widthC/2),initialY+j*widthC+(widthC/2))
+
+
+}
+}
+
+
+}
+
+
+
+
+}
+function setDifficulty(num)
+{
+
+if(num==0)
+{
+difficulty='E'
+
+}
+if(num==1)
+{
+difficulty='M'
+
+}
+if(num==2)
+{
+difficulty='H'
+
+}
+
+startNewGame()
+
+}
+
+function startNewGame()
+{
+context.clearRect(0,0,can.width,can.height)
+redArray=[]
+context.strokeStyle = "black";
+drawSudoku()
+
+generateSudokuDataset()
+renderDataset()
+}
+window.onload = (function () {
+modal=document.getElementById('myModal')
+can=document.getElementById('canvas')
+
+context=can.getContext("2d")
+
+ can.width = window.innerWidth;
+    can.height = window.innerHeight;
+canvasWidth=can.width
+
+canvasHeight=can.height
+sudokuBorderWidth=(canvasWidth/2)
+sudokuBorderHeight=(canvasHeight/2)
+avg=(sudokuBorderWidth+sudokuBorderHeight)/2
+
+initialX=sudokuBorderWidth-300
+initialY=sudokuBorderHeight-300
+widthC=(avg-50)/9
+heightC=initialY+avg-50
+heightR=(avg-50)/9
+widthR=initialX+avg-50
+init=initialX-30
+
+drawSudoku()
+
+generateSudokuDataset()
+renderDataset()
+
+var z=0
+x=0
+y=0
+wid=0
+hig=0
+indexX=-1
+indexY=-1
+previndexX=0
+previndexY=0
+canvas.addEventListener('click',function(evt){
+
+var mousePos=getMousePos(can,evt)
+
+for(var i=0;i<9;++i)
+{
+for(var j=0;j<9;++j)
+{
+if(isInside(mousePos,initialX+j*widthC,initialY+i*widthC,widthC,widthC))
+{
+
+if(checkArray[j][i]==0)
+{
+if(z==1)
+{
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+drawSudoku()
+renderDataset()
+}
+context.lineWidth="3"
+
+context.strokeStyle = "red";
+ context.strokeRect(initialX+j*widthC,initialY+i*widthC, widthC,widthC);
+
+x=initialX+j*widthC
+y=initialY+i*widthC
+wid=widthC
+hig=widthC
+z=1
+indexX=j
+indexY=i
+}
+else
+{
+
+indexX=j
+indexY=i
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+drawSudoku()
+renderDataset()
+
+}
+
+
+}
+}
+
+}
+for(var i=0;i<10;++i)
+{
+
+if(isInside(mousePos,init+i*(heightR+5),initialY+avg,heightR,heightR))
+{
+
+if(checkArray[indexX][indexY]==0&&i<9)
+{
+
+
+
+sudokuArray[indexX][indexY]=0
+
+
+
+if(previndexX==indexX&&previndexY==indexY)
+{
+
+
+if(redArray.includes(indexX*9+indexY+1)==true)redArray=redArray.slice(0,redArray.indexOf(indexX*9+indexY+1)).concat(redArray.slice(redArray.indexOf(indexX*9+indexY+1)+1,redArray.length))
+
+
+var f=checkSudokuData(indexX,indexY,i+1)
+if(f==1)
+{
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+drawSudoku()
+renderDataset()
+context.lineWidth="3"
+
+context.strokeStyle = "red";
+ context.strokeRect(initialX+indexX*widthC,initialY+indexY*widthC, widthC,widthC);
+
+
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(i+1,x+wid/2,y+hig/2)
+redArray.push(indexX*9+indexY+1)
+sudokuArray[indexX][indexY]=i+1
+
+
+}
+
+else
+{
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+
+drawSudoku()
+renderDataset()
+context.lineWidth="3"
+
+context.strokeStyle = "red";
+ context.strokeRect(initialX+indexX*widthC,initialY+indexY*widthC, widthC,widthC);
+
+context.strokeStyle = "black";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(i+1,x+wid/2,y+hig/2)
+
+sudokuArray[indexX][indexY]=i+1
+
+
+}
+ 
+
+
+}
+else
+{
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+
+drawSudoku()
+renderDataset()
+if(redArray.includes(indexX*9+indexY+1)==true)redArray=redArray.slice(0,redArray.indexOf(indexX*9+indexY+1)).concat(redArray.slice(redArray.indexOf(indexX*9+indexY+1)+1,redArray.length))
+
+var f=checkSudokuData(indexX,indexY,i+1)
+if(f==0)
+{
+context.strokeStyle = "black";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(i+1,x+wid/2,y+hig/2)
+ 
+
+}
+else
+{
+context.strokeStyle = "red";
+context.font="20px Georgia";
+context.lineWidth="1"
+context.strokeText(i+1,x+wid/2,y+hig/2)
+
+redArray.push(indexX*9+indexY+1)
+}
+context.lineWidth="3"
+
+context.strokeStyle = "red";
+context.strokeRect(initialX+indexX*widthC,initialY+indexY*widthC, widthC,widthC);
+
+
+previndexX=indexX
+previndexY=indexY
+sudokuArray[indexX][indexY]=i+1
+
+}
+
+}
+if(i==9)
+{
+sudokuArray[indexX][indexY]=0
+context.clearRect(0,0,can.width,can.height)
+context.strokeStyle = "black";
+
+drawSudoku()
+renderDataset()
+context.lineWidth="3"
+
+context.strokeStyle = "red";
+context.strokeRect(initialX+indexX*widthC,initialY+indexY*widthC, widthC,widthC);
+
+
+
+}
+
+}
+
+
+}
+}, false);
+
+span = document.getElementsByClassName("close")[0];
+span.onclick = function() {
+  modal.style.display = "none";
+}
+});
+
+</script>
+</head>
+<body>
+<div class="topnav">
+  <a href="javascript:void(0);" onclick="startNewGame();">New Game</a>
+
+ <div class="dropdown">
+    <button class="dropbtn">Difficulty Level 
+      <i class="fa fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <a href="javascript:setDifficulty(0);">Easy</a>
+      <a href="javascript:setDifficulty(1);">Medium</a>
+      <a href="javascript:setDifficulty(2);">Hard</a>
+    </div>
+  </div>   
+<a href="javascript:checkSolution();">Submit Game</a>
+
+</div>
+
+<canvas id="canvas">
+
+
+</canvas>
+<img id="editImage" src="edit.png" style="display:none"/>
+
+
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p id="text"></p>
+  </div>
+
+
+
+</div>
+</body>
+</html>
+
+
+
+	
+	
+	
+
